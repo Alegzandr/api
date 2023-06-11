@@ -9,13 +9,50 @@ dotenv.config();
 const authController = {
     register: async (request: Request, response: Response) => {
         try {
-            const existingUser = await User.findOne({
-                email: request.body.email,
-            });
+            if (
+                !request.body.email ||
+                !request.body.username ||
+                !request.body.password
+            ) {
+                return response
+                    .status(400)
+                    .json({ error: 'Please fill all required fields' });
+            }
+
+            const existingUser =
+                (await User.findOne({
+                    email: request.body.email,
+                })) ||
+                (await User.findOne({ username: request.body.username }));
             if (existingUser) {
                 return response
                     .status(400)
                     .json({ error: 'User already exists' });
+            }
+
+            const emailRegex = new RegExp(
+                /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/
+            );
+            if (!emailRegex.test(request.body.email)) {
+                return response
+                    .status(400)
+                    .json({ error: 'Please enter a valid email' });
+            }
+
+            const usernameRegex = new RegExp(/^[a-zA-Z0-9]+$/);
+            if (!usernameRegex.test(request.body.username)) {
+                return response.status(400).json({
+                    error: 'Username must contain only alphanumeric characters',
+                });
+            }
+
+            const passwordRegex = new RegExp(
+                /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/
+            );
+            if (!passwordRegex.test(request.body.password)) {
+                return response.status(400).json({
+                    error: 'Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character',
+                });
             }
 
             const hashedPassword = await bcrypt.hash(request.body.password, 10);

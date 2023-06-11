@@ -21,3 +21,5 @@ app.use('/api', userRoutes);
 app.listen(port, () => {
     console.log(`API listening on port ${port}`);
 });
+
+export default app;
