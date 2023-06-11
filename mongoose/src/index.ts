@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { connect } from 'mongoose';
+import userRoutes from './routes/userRoutes';
 
 dotenv.config();
 
@@ -12,6 +13,8 @@ app.use(cors());
 app.use(express.json());
 
 connect(process.env.DATABASE_URL!, {});
+
+app.use('/api', userRoutes);
 
 app.listen(port, () => {
     console.log(`API listening on port ${port}`);
