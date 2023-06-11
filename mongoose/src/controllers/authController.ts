@@ -70,6 +70,30 @@ const authController = {
         try {
             const { email, password } = request.body;
 
+            if (!email || !password) {
+                return response
+                    .status(400)
+                    .json({ error: 'Please fill all required fields' });
+            }
+
+            const emailRegex = new RegExp(
+                /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/
+            );
+            if (!emailRegex.test(email)) {
+                return response
+                    .status(400)
+                    .json({ error: 'Please enter a valid email' });
+            }
+
+            const passwordRegex = new RegExp(
+                /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/
+            );
+            if (!passwordRegex.test(password)) {
+                return response.status(400).json({
+                    error: 'Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character',
+                });
+            }
+
             const user = await User.findOne({ email });
             if (!user) {
                 return response
